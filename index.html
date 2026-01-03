@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+input, textarea, button { width: 100%; margin: 5px 0; padding: 8px; }
+button { background: #ff7043; color: white; border: none; cursor: pointer; }
+button:hover { background: #f4511e; }
+</style>
+</head>
+<body>
+
+
+<h1>🍲 Recipe Sharing Platform</h1>
+
+
+<div class="card">
+<h3>Add Recipe</h3>
+<input id="title" placeholder="Recipe Title" />
+<textarea id="ingredients" placeholder="Ingredients"></textarea>
+<textarea id="instructions" placeholder="Instructions"></textarea>
+<button onclick="addRecipe()">Add Recipe</button>
+</div>
+
+
+<input id="search" placeholder="Search recipes" onkeyup="loadRecipes()" />
+
+
+<div id="recipes"></div>
+
+
+<script>
+let likes = {};
+
+
+function getRecipes() {
+return JSON.parse(localStorage.getItem('recipes')) || [];
+}
+
+
+function saveRecipes(recipes) {
+localStorage.setItem('recipes', JSON.stringify(recipes));
+}
+
+
+function addRecipe() {
+const title = titleInput.value.trim();
+const ingredients = ingredientsInput.value.trim();
+const instructions = instructionsInput.value.trim();
+
+
+if (!title || !ingredients || !instructions) return alert('Fill all fields');
+
+
+const recipes = getRecipes();
+recipes.push({ id: Date.now(), title, ingredients, instructions });
+saveRecipes(recipes);
+loadRecipes();
+}
+
+
+function deleteRecipe(id) {
+saveRecipes(getRecipes().filter(r => r.id !== id));
+loadRecipes();
+}
+
+
+function likeRecipe(id) {
+likes[id] = (likes[id] || 0) + 1;
+loadRecipes();
+}
+
+
+function loadRecipes() {
+const query = search.value.toLowerCase();
+recipes.innerHTML = '';
+
+
+getRecipes().filter(r => r.title.toLowerCase().includes(query))
+.forEach(r => {
+recipes.innerHTML += `
+<div class="card">
+<h3>${r.title}</h3>
+<p><b>Ingredients:</b> ${r.ingredients}</p>
+<p><b>Instructions:</b> ${r.instructions}</p>
+<p>❤️ ${likes[r.id] || 0}</p>
+<button onclick="likeRecipe(${r.id})">Like</button>
+<button onclick="deleteRecipe(${r.id})">Delete</button>
+</div>`;
+});
+}
+
+
+const titleInput = document.getElementById('title');
+const ingredientsInput = document.getElementById('ingredients');
+const instructionsInput = document.getElementById('instructions');
+const recipes = document.getElementById('recipes');
+const search = document.getElementById('search');
+
+
+loadRecipes();
+</script>
+
+
+</body>
+</html>
